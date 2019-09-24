@@ -5,10 +5,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Nestable++</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}"> // you need this token to send data
 
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{{asset('css/admin/css/nestable.css')}}"> //or use cdn
     <link href="style.css" rel="stylesheet">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -124,54 +126,47 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
     <script src="./jquery.nestable.js"></script>
-   
-     <script type="text/javascript">
-    $(document).ready(function() {
-        $(function() {
-            $('.dd').on('change',  function(details) {
-                
-                var order = new Array();
-                $("li[data-id='"+details.destId +"']").find('ol:first').children().each(function(index,elem) {
-                    order[index] = $(elem).attr('data-id');
-                });
-               
-                if (order.length === 0){
-                    var rootOrder = new Array();
-                    $("#nestable > ol > li").each(function(index,elem) {
-                    rootOrder[index] = $(elem).attr('data-id');
-                    });
-                    
-                }
-                var token = $('form').find( 'input[name=_token]' ).val();
-                var test = $.post('{{url("menustop/reorder/")}}', 
-                    {
-                        source : details.sourceId, 
-                        destination: details.destId, 
-                        order:JSON.stringify(order),
-                        rootOrder:JSON.stringify(rootOrder),
-                        _token: token 
-                    },
-                    function(data) {
-                //    console.log('data '+data); 
-                    })
-                .done(function() { 
-                    $( "#success-indicator" ).fadeIn(100).delay(1000).fadeOut();
-                })
-                .fail(function(e) { console.log('fail'+e)  })
-                .always(function() { console.log('always')  });
-                console.log(test);
+    
+    
+    
+    //try this one instead 
+    <script>
+    $(function() {
+        $('.dd').nestable({
+            maxDepth: 3,
+            dropCallback: function(details) {
             
-});
-            $('.dd').nestable({
-                dropCallback: function(details){
-                    console.log(details);
-                }.on('change',  function(details) {
-                })
-               
+            var order = new Array();
+            $("li[data-id='"+details.destId +"']").find('ol:first').children().each(function(index,elem) {
+                order[index] = $(elem).attr('data-id');
             });
+            if (order.length === 0){
+                var rootOrder = new Array();
+                $("#nestable > ol > li").each(function(index,elem) {
+                rootOrder[index] = $(elem).attr('data-id');
+                });
+            }
+            var token = $('form').find( 'input[name=_token]' ).val();
+            $.post('{{url("menustop/reorder/")}}', 
+                {
+                    source : details.sourceId, 
+                    destination: details.destId, 
+                    order:JSON.stringify(order),
+                    rootOrder:JSON.stringify(rootOrder),
+                    _token: token 
+                },
+                function(data) {
+                // console.log('data '+data); 
+                })
+            .done(function() { 
+                $( "#success-indicator" ).fadeIn(100).delay(1000).fadeOut();
+            })
+            .fail(function() {  })
+            .always(function() {  });
+            }
 
         });
     });
-    </script>
+</script>
   </body>
 </html>
